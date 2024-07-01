@@ -124,7 +124,7 @@ pipeline {
                 </body>
                 </html>
             """,
-            to: 'vijaygiduthuri67@gmail.com',
+            to: 'Provide_email_here',
             mimeType: 'text/html'
         }
     }
