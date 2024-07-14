@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: Netflix-deployment
+  name: netflix-deployment
 spec:
   replicas: 3
   selector:
@@ -21,7 +21,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: Netflix-svc
+  name: netflix-svc
   labels:
     app: my-app-np
 spec:
