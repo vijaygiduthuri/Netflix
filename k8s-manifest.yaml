@@ -17,6 +17,8 @@ spec:
         image: cyberdesk07/netflix:latest
         ports:
         - containerPort: 4000
+      imagePullSecrets:
+      - name: dockerhub-secret
 ---
 apiVersion: v1
 kind: Service
@@ -27,6 +29,6 @@ spec:
     app: apache
   ports:
     - protocol: TCP
-      port:4000 
+      port: 80
       targetPort: 4000
   type: LoadBalancer
