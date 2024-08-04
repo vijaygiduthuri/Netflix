@@ -4,7 +4,7 @@ services:
   web:
     build: .
     ports:
-      - "4000:80"
+      - "4001:80"
     volumes:
       - .:/var/www/html
     command: ["/usr/sbin/apachectl", "-D", "FOREGROUND"]
