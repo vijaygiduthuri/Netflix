@@ -1,0 +1,76 @@
+pipeline {
+    agent any
+    
+    environment {
+        SONAR_HOME = tool 'Sonar'
+    }
+    
+    stages {
+        stage('Code') {
+            steps {
+                // Checkout the source code from Git
+                git url: 'https://github.com/ashaymahajan19/Netflix.git', branch: 'main'
+                echo 'Checked out source code'
+            }
+        }
+        
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('Sonar') {
+                    sh '${SONAR_HOME}/bin/sonar-scanner -Dsonar.projectName=netflix -Dsonar.projectKey=netflix -X'
+                }
+            }
+        }
+        
+        stage('SonarQube Quality Gates') {
+            steps {
+                timeout(time: 1, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: false
+                }
+            }
+        }
+        
+        stage('OWASP Dependency Check') {
+            steps {
+                dependencyCheck additionalArguments: '--scan ./', odcInstallation: 'OWASP'
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
+        }
+        
+        stage('Build the Code') {
+            steps {
+                sh 'docker build -t netflix-cicd:latest .'
+                echo 'Docker image built successfully'
+            }
+        }
+        
+        stage('Scan Image with Trivy') {
+            steps {
+                sh 'trivy image netflix-cicd'
+            }
+        }
+        
+        stage('Push to DockerHub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'DockerHubCreds', usernameVariable: 'dockerUser', passwordVariable: 'dockerPass')]) {
+                    sh 'docker login -u ${dockerUser} -p ${dockerPass}'
+                    sh 'docker image tag netflix-cicd:latest ${dockerUser}/netflix-cicd:latest'
+                    sh 'docker push ${dockerUser}/netflix-cicd:latest'
+                }
+            }
+        }
+        
+        stage('Docker Compose Deploy') {
+            steps {
+                sh 'docker compose up -d'
+                echo 'App deployed successfully'
+            }
+        }
+    }
+    
+    post {
+        always {
+            archiveArtifacts artifacts: '**/Dockerfile', allowEmptyArchive: true
+        }
+    }
+}
