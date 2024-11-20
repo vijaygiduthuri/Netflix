@@ -14,7 +14,7 @@ pipeline {
         }
         stage ("Build Docker Image") {
             steps {
-                sh "docker build -t netflix ."
+                sh "docker build -t netflix:latest ."
             }
         }
         stage ("Deploy to Docker Conatiner") {
