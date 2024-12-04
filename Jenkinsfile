@@ -49,10 +49,5 @@ pipeline {
                 sh "docker run -itd --name netflix -p 4000:80 netflix:latest"
             }
         }
-        stage ("Deployment Success") {
-            steps {
-                echo "Deployment Success"
-            }
-        }
     }
 }    
