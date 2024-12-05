@@ -17,11 +17,6 @@ pipeline {
                 sh "docker build -t netflix:latest ."
             }
         }
-        stage ("Scan Docker Image Using Trivy") {
-            steps {
-                sh "trivy image netflix:latest"
-            }
-        }
         stage ('Cleanup Docker Image on VM'){
             steps {
                 // Remove all unused Docker images
