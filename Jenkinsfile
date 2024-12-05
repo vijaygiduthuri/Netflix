@@ -12,11 +12,6 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/vijaygiduthuri/Netflix.git'
             }
         }
-        stage ("Scan GitHub Repository Using Trivy") {
-            steps {
-                sh "trivy fs ."
-            }
-        }
         stage ("Build Docker Image") {
             steps {
                 sh "docker build -t netflix:latest ."
