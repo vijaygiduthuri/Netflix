@@ -4,5 +4,4 @@ netflix:
   replicas: 2
   serviceName: netflix-service
   type: LoadBalancer
-~
 
