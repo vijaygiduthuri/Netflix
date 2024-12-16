@@ -1,30 +1,44 @@
 pipeline {
     agent any 
     
+    environment {
+        GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-service-account')
+        GOOGLE_CLOUD_PROJECT = credentials('gcp-project-id')
+    }
+    
     stages {
-        stage('clean workspace'){
-            steps{
+        stage('Clean Workspace') {
+            steps {
                 cleanWs()
             }
         }
-        stage ("Git Checkout") {
+        stage('Git Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/vijaygiduthuri/Netflix.git'
             }
         }
-        stage ("Scan GitHub Repository Using Trivy") {
-            steps {
-                sh "trivy fs ."
-            }
-        }
-        stage ("Build Docker Image") {
+        stage('Build Docker Image') {
             steps {
                 sh "docker build -t netflix:latest ."
             }
         }
-        stage ("Scan Docker Image Using Trivy") {
+        stage('Authenticate with Google Cloud') {
             steps {
-                sh "trivy image netflix:latest"
+                withCredentials([file(credentialsId: 'gcp-service-account', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                    sh "gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}"
+                    sh "gcloud config set project ${GOOGLE_CLOUD_PROJECT}"
+                    sh "gcloud auth configure-docker us-central1-docker.pkg.dev"
+                }
+            }
+        }
+        stage('Tag Docker Image for Artifact Registry') {
+            steps {
+                sh "docker tag netflix:latest us-central1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/docker-repo/netflix:latest"
+            }
+        }
+        stage('Push Docker Image to Artifact Registry') {
+            steps {
+                sh "docker push us-central1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/docker-repo/netflix:latest"
             }
         }
         stage ('Cleanup Docker Image on VM'){
@@ -43,11 +57,11 @@ pipeline {
                 fi
                 """
             }
-        }        
-        stage ("Deploy to Docker Conatiner") {
+        }
+        stage('Deploy Docker Image from Artifact Registry') {
             steps {
-                sh "docker run -itd --name netflix -p 4000:80 netflix:latest"
+                sh "docker run -itd --name netflix -p 4000:80 us-central1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/docker-repo/netflix:latest"
             }
         }
     }
-}    
+}
