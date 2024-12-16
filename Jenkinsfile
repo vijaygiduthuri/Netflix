@@ -16,7 +16,7 @@ pipeline {
         stage('Git Checkout') {
             steps {
                 // Checkout the main branch from the GitHub repository
-                git branch: 'main', url: 'https://github.com/vijaygiduthuri/Netflix.git'
+                git branch: 'newdevelopment', url: 'https://github.com/vijaygiduthuri/Netflix.git'
             }
         }
         stage('Build Docker Image') {
@@ -25,16 +25,16 @@ pipeline {
                 sh "docker build -t netflix:latest ."
             }
         }
-        // stage('Authenticate with Google Cloud') {
-        //     steps {
-        //         // Authenticate using the service account key
-        //         sh """
-        //         gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
-        //         gcloud config set project ${GOOGLE_CLOUD_PROJECT}
-        //         gcloud auth configure-docker us-central1-docker.pkg.dev
-        //         """
-        //     }
-        // }
+        stage('Authenticate with Google Cloud') {
+            steps {
+                // Authenticate using the service account key
+                sh """
+                gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
+                gcloud config set project ${GOOGLE_CLOUD_PROJECT}
+                gcloud auth configure-docker us-central1-docker.pkg.dev
+                """
+            }
+        }
         stage('Tag Docker Image for Artifact Registry') {
             steps {
                 // Tag the built Docker image for Artifact Registry
@@ -85,6 +85,7 @@ pipeline {
                         sh "ls .."
                         sh "pwd"
                         sh "helm upgrade --install netflix . --namespace default --debug"
+                        sh "rm -rf $WORKSPACE"
                     }
                 }
             }
