@@ -13,9 +13,8 @@ spec:
         app: netflix
     spec:
       containers:
-      - name: netflix-container
-        image: {{ .Values.netflix.image }}
-        imagePullPolicy: IfNotPresent
+      - name: netflix
+        image: "{{ .Values.netflix.image.repository }}:{{ .Values.netflix.image.tag }}"
+        imagePullPolicy: "{{ .Values.netflix.image.pullPolicy }}"
         ports:
         - containerPort: 4000
-
