@@ -3,7 +3,7 @@ netflix:
   image:
     repository: us-central1-docker.pkg.dev/optimum-beach-440914-n9/docker-repo/netflix
     tag: latest # Default tag, can be overridden during Helm deployment
-    pullPolicy: Always # Ensures the latest image is pulled
+    pullPolicy: IfNotPresent # Ensures the latest image is pulled
   replicas: 2
   serviceName: netflix-service
   type: NodePort
